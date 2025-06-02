@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>3D Cinematic Birthday Wish</title>
+<style>
+  /* Reset */
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+  }
+  body, html {
+    height: 100%;
+    overflow: hidden;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    perspective: 1000px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #fff;
+  }
+  .scene {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    perspective-origin: center bottom;
+    perspective: 1400px;
+    overflow: hidden;
+  }
+  .layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+  }
+  /* Background glow */
+  .bg-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 120vw;
+    height: 120vh;
+    background:
+      radial-gradient(circle at center, #ffd3a5 30%, transparent 60%),
+      radial-gradient(circle at 20% 30%, #ff8c00 20%, transparent 50%),
+      radial-gradient(circle at 80% 60%, #ff5f6d 15%, transparent 40%);
+    filter: blur(100px);
+    transform: translate3d(-50%, -50%, 0) translateZ(-50px);
+    opacity: 0.8;
+    z-index: 0;
+  }
+
+  /* Floating glowing petals container */
+  .petals-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* Petals */
+  .petal {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle closest-side, #ff9a9e, #fad0c4);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    filter: drop-shadow(0 0 8px #ff6f91);
+    transform-origin: center bottom;
+    animation-timing-function: linear;
+  }
+  /* Each petal shape variants */
+  .petal::before {
+    content: '';
+    position: absolute;
+    top: 2px; left: 6px;
+    width: 8px; height: 12px;
+    background: inherit;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    transform: rotate(35deg);
+  }
+
+  /* Birthday card */
+  .birthday-card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 450px; /* increased width */
+    height: 350px; /* increased height */
+    background: rgba(255 255 255 / 0.1);
+    border-radius: 25px;
+    box-shadow:
+      0 0 20px #ff6f91,
+      inset 0 0 30px #ff9a9e;
+    backdrop-filter: blur(15px);
+    transform: translate3d(-50%, -50%, 150px) rotateX(15deg) rotateY(-15deg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    color: #ffe6e8;
+    text-shadow: 0 0 10px #ff5f6d;
+  }
+
+  .birthday-card h1 {
+    font-size: 3.2rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    text-align: center;
+    margin-bottom: 12px;
+    animation: glowPulse 2s ease-in-out infinite;
+  }
+  /* Focused name style with stronger distinct glowing */
+  .birthday-card .name {
+    font-size: 2.8rem; /* increased font size */
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #ff3a55; /* stronger vivid pink/red */
+    text-shadow:
+      0 0 8px #ff3a55,
+      0 0 16px #ff3a55,
+      0 0 24px #ff1a3f;
+    letter-spacing: 0.06em;
+    text-align: center;
+    animation: glowPulse 2s ease-in-out infinite;
+  }
+
+  .birthday-card p {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0;
+    line-height: 1.4;
+    text-align: center;
+  }
+
+  /* Glowing text animation */
+  @keyframes glowPulse {
+    0%, 100% {
+      text-shadow:
+        0 0 10px #ff5f6d,
+        0 0 20px #ff5f6d,
+        0 0 30px #ff5f6d;
+      color: #fff4f6;
+    }
+    50% {
+      text-shadow:
+        0 0 20px #ff9a9e,
+        0 0 30px #ff9a9e,
+        0 0 40px #ff7a85,
+        0 0 50px #ff7a85;
+      color: #ffcad4;
+    }
+  }
+
+  /* Animation for floating petals */
+  @keyframes floatPetal {
+    0% {
+      transform: translate3d(0, 0, 0) rotateZ(0deg) rotateX(0deg);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    100% {
+      transform: translate3d(var(--x-move), var(--y-move), var(--z-move)) rotateZ(360deg) rotateX(180deg);
+      opacity: 0;
+    }
+  }
+
+  /* Glowing Flower Columns on Sides */
+  .flowers-left,
+  .flowers-right {
+    position: absolute;
+    top: 50%;
+    width: 80px;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    transform-style: preserve-3d;
+    transform-origin: center;
+    z-index: 15;
+    pointer-events: none;
+  }
+  .flowers-left {
+    left: 10px;
+    transform: translateY(-50%) translateZ(100px) rotateY(20deg);
+  }
+  .flowers-right {
+    right: 10px;
+    transform: translateY(-50%) translateZ(100px) rotateY(-20deg);
+  }
+
+  /* Single flower style */
+  .flower {
+    width: 60px;
+    height: 60px;
+    position: relative;
+    filter: drop-shadow(0 0 10px #ff85a2);
+    animation: flowerGlowPulse 4s ease-in-out infinite;
+  }
+
+  /* Glow pulse animation */
+  @keyframes flowerGlowPulse {
+    0%, 100% {
+      filter: drop-shadow(0 0 10px #ff85a2);
+    }
+    50% {
+      filter: drop-shadow(0 0 20px #ff5678);
+    }
+  }
+
+  /* Flower petals */
+  .petal-flower {
+    position: absolute;
+    width: 26px;
+    height: 40px;
+    background: linear-gradient(135deg, #ff9a9e, #fbced8);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    transform-origin: center bottom;
+    filter: drop-shadow(0 0 6px #ff6f91);
+  }
+  .petal-flower:nth-child(1) {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -100%) rotate(0deg);
+  }
+  .petal-flower:nth-child(2) {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -100%) rotate(45deg);
+  }
+  .petal-flower:nth-child(3) {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -100%) rotate(90deg);
+  }
+  .petal-flower:nth-child(4) {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -100%) rotate(135deg);
+  }
+  .petal-flower:nth-child(5) {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -100%) rotate(180deg);
+  }
+  .petal-flower:nth-child(6) {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -100%) rotate(225deg);
+  }
+  .petal-flower:nth-child(7) {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -100%) rotate(270deg);
+  }
+  .petal-flower:nth-child(8) {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -100%) rotate(315deg);
+  }
+
+  /* Flower center */
+  .flower-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 26px;
+    height: 26px;
+    background: radial-gradient(circle, #ff4567 0%, #e02f4f 80%);
+    border-radius: 50%;
+    box-shadow: 0 0 15px #ff4567;
+    transform: translate(-50%, -50%);
+  }
+
+  /* Subtle sway animation for flowers */
+  @keyframes flowerSway {
+    0%, 100% {
+      transform: translateZ(0) rotateY(0deg);
+    }
+    50% {
+      transform: translateZ(3px) rotateY(5deg);
+    }
+  }
+  .flower {
+    animation-name: flowerGlowPulse, flowerSway;
+    animation-duration: 4s, 6s;
+    animation-iteration-count: infinite, infinite;
+    animation-timing-function: ease-in-out, ease-in-out;
+    animation-fill-mode: forwards, forwards;
+  }
+
+</style>
+</head>
+<body>
+<div class="scene">
+
+  <div class="bg-glow"></div>
+
+  <div class="petals-container" id="petalsContainer"></div>
+
+  <div class="flowers-left" aria-hidden="true">
+    <div class="flower" role="presentation" aria-hidden="true">
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="flower-center"></div>
+    </div>
+    <div class="flower" role="presentation" aria-hidden="true">
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="flower-center"></div>
+    </div>
+    <div class="flower" role="presentation" aria-hidden="true">
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="flower-center"></div>
+    </div>
+  </div>
+
+  <div class="flowers-right" aria-hidden="true">
+    <div class="flower" role="presentation" aria-hidden="true">
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="flower-center"></div>
+    </div>
+    <div class="flower" role="presentation" aria-hidden="true">
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="flower-center"></div>
+    </div>
+    <div class="flower" role="presentation" aria-hidden="true">
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="petal-flower"></div>
+      <div class="flower-center"></div>
+    </div>
+  </div>
+
+  <div class="birthday-card" role="main" aria-label="Birthday Wish">
+    <h1>Happy Birthday!</h1>
+    <div class="name">Issac Newton</div>
+    <p>May your day be filled with joy, love, and glowing moments.</p>
+  </div>
+
+</div>
+
+<script>
+  // Generate floating petals with random positions and animation
+  const petalsContainer = document.getElementById('petalsContainer');
+  const petalCount = 60; // Increased from 40 to 60
+
+  function randomRange(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  // Create a petal element with customized animation
+  function createPetal() {
+    const petal = document.createElement('div');
+    petal.className = 'petal';
+
+    // Random start position within viewport width and height
+    const startX = randomRange(0, window.innerWidth);
+    const startY = randomRange(window.innerHeight * 0.8, window.innerHeight);
+    const zStart = randomRange(-100, 100);
+
+    // Random movement distance in px for X, Y, Z axis for animation
+    const xMove = randomRange(-200, 200) + 'px';
+    const yMove = '-' + randomRange(400, 800) + 'px'; // move upwards
+    const zMove = randomRange(-100, 100) + 'px';
+
+    // Assign CSS variables for animation end position
+    petal.style.setProperty('--x-move', xMove);
+    petal.style.setProperty('--y-move', yMove);
+    petal.style.setProperty('--z-move', zMove);
+
+    petal.style.left = startX + 'px';
+    petal.style.top = startY + 'px';
+    petal.style.transform = `translateZ(${zStart}px) rotateZ(${randomRange(0, 360)}deg) rotateX(${randomRange(0, 360)}deg)`;
+
+    // Random animation duration and delay for natural effect
+    const duration = randomRange(8, 16);
+    const delay = randomRange(0, 16);
+
+    petal.style.animation = `floatPetal ${duration}s linear infinite`;
+    petal.style.animationDelay = delay + 's';
+
+    petalsContainer.appendChild(petal);
+  }
+
+  // Add all petals to container
+  for (let i = 0; i < petalCount; i++) {
+    createPetal();
+  }
+
+  // Adjust petals on window resize to keep them within viewport
+  window.addEventListener('resize', () => {
+    petalsContainer.innerHTML = '';
+    for (let i = 0; i < petalCount; i++) {
+      createPetal();
+    }
+  });
+</script>
+</body>
+</html>
