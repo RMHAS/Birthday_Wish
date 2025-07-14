@@ -292,8 +292,19 @@
     animation-fill-mode: forwards, forwards;
   }
 @media (max-width: 500px) {
+  html, body {
+    overflow: auto;
+  }
+
+  .scene {
+    width: 100vw;
+    height: auto;
+    overflow: auto;
+  }
+
   .birthday-card {
     width: 90%;
+    max-width: 90%;
     height: auto;
     padding: 20px;
     transform: translate3d(-50%, -50%, 150px) rotateX(10deg) rotateY(-10deg);
