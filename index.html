@@ -291,7 +291,26 @@
     animation-timing-function: ease-in-out, ease-in-out;
     animation-fill-mode: forwards, forwards;
   }
+@media (max-width: 500px) {
+  .birthday-card {
+    width: 90%;
+    height: auto;
+    padding: 20px;
+    transform: translate3d(-50%, -50%, 150px) rotateX(10deg) rotateY(-10deg);
+  }
 
+  .birthday-card h1 {
+    font-size: 2rem;
+  }
+
+  .birthday-card .name {
+    font-size: 1.8rem;
+  }
+
+  .birthday-card p {
+    font-size: 1rem;
+  }
+}
 </style>
 </head>
 <body>
